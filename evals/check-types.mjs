@@ -23,7 +23,14 @@ const ngrxPackages = [
   'router-store',
   'store-devtools',
 ];
-const angularPackages = ['core', 'common', 'compiler', 'platform-browser', 'router'];
+const angularPackages = [
+  'core',
+  'common',
+  'compiler',
+  'platform-browser',
+  'platform-browser-dynamic',
+  'router',
+];
 
 async function npmView(spec, field) {
   const { stdout } = await execFileAsync('npm', ['view', spec, field, '--json']);
@@ -49,7 +56,9 @@ async function installToolchain(toolchain) {
     `ngrx-${toolchain.ngrx}-angular-${toolchain.angular}-ts-${toolchain.typescript}`
   );
 
-  if (await stat(join(directory, 'node_modules', 'zone.js')).catch(() => null)) {
+  if (
+    await stat(join(directory, 'node_modules', '@angular', 'platform-browser-dynamic')).catch(() => null)
+  ) {
     return directory;
   }
 

@@ -188,6 +188,13 @@ action; don't `dispatch` from inside effects (ESLint enforces both). Register wi
 `provideEffects([MoviesEffects])` / `provideEffects(loadActors)` (standalone) or
 `EffectsModule.forRoot/forFeature`.
 
+When an effect needs state, use `concatLatestFrom(() => this.store.select(selector))` from
+`@ngrx/operators`: unlike `withLatestFrom`, it subscribes to the selector only after the action
+arrives. The bundled `guide/effects/index.md` example still imports `concatLatestFrom` from
+`@ngrx/effects`, which has not exported it since NgRx 18 (`guide/migration/v18.md`); import it from
+`@ngrx/operators`. `mapResponse` from the same package maps success and error to actions in one
+call.
+
 ## 6. `@ngrx/entity`
 
 Classic entity management. `createEntityAdapter<T>()` gives an `EntityState<T>` (`ids` +

@@ -30,13 +30,13 @@ Produce version-aware NgRx code that fits the existing Angular application. Use 
 
 1. Define ownership, invariants, public API, loading/error states, and side-effect boundaries.
 2. Read only the smallest relevant curated reference, then open or search the official snapshot when exact signatures, edge cases, tests, or migration details matter.
-3. Follow the project's standalone or NgModule provider style; do not mix registration styles casually.
+3. Follow the project's standalone or NgModule provider style; do not mix registration styles casually. Write the registration itself as code, down to the route entry or component that owns it (for example the `/print` route with `providers: [provideState(...), provideEffects(...)]`), not only as a comment or a helper nobody calls: it decides the state's lifetime.
 4. Keep state transitions immutable, selectors/computed state pure, effects isolated, and public APIs strongly typed.
 5. Model actions and events as occurrences with specific sources. Avoid command-like names when event semantics are appropriate.
 6. Expose view-ready computed state or selectors instead of duplicating derivations in templates.
 7. Catch effect errors inside the inner observable so the outer effect keeps listening. Choose flattening operators from the required cancellation and concurrency behavior.
-8. Add focused tests for transitions, derived state, async behavior, registration, cancellation, and errors. Use TestBed when SignalStore features need injection context.
-9. Run the narrowest formatter, lint, test, typecheck, and build targets. In Nx, use the workspace package manager and Nx.
+8. Add focused tests for transitions, derived state, async behavior, registration, cancellation, and errors. Use TestBed when SignalStore features need injection context. In Store and Effects specs, use NgRx's test utilities (`provideMockStore` or `createMockStore` with `selectors`, `overrideSelector`, `provideMockActions`) instead of hand-written `Store` fakes; they keep selector overrides tied to the real selectors.
+9. Run the narrowest formatter, lint, test, typecheck, and build targets. In Nx, use the workspace package manager and Nx. Without a project toolchain, type-check in a scratch directory with the TypeScript range the installed Angular requires, read from `npm view @angular/compiler-cli@<version> peerDependencies` (Angular 22: `typescript@~6.0`). Never install `typescript@latest` for this: it may be a major Angular does not support, and a different compiler can accept code the real toolchain rejects.
 
 When cancellation is contractual, use controllable observables or the repository's HTTP testing utility. Start a second request and prove the first is cancelled and cannot commit stale state.
 
