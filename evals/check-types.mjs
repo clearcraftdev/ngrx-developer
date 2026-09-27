@@ -57,7 +57,7 @@ async function installToolchain(toolchain) {
   );
 
   if (
-    await stat(join(directory, 'node_modules', '@angular', 'platform-browser-dynamic')).catch(() => null)
+    await stat(join(directory, 'node_modules', '@vitest', 'browser')).catch(() => null)
   ) {
     return directory;
   }
@@ -77,6 +77,7 @@ async function installToolchain(toolchain) {
       'zone.js',
       `typescript@${toolchain.typescript}`,
       'vitest@latest',
+      '@vitest/browser@latest',
     ],
     { cwd: directory, maxBuffer: 16 * 1024 * 1024 }
   );
