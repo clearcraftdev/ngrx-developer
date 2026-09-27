@@ -1,0 +1,86 @@
+{
+  "skill_name": "ngrx-developer",
+  "evals": [
+    {
+      "id": 1,
+      "name": "parcel-search-signalstore",
+      "prompt": "Our Angular 22 geoportal is adding NgRx (use the latest stable release). Build the state for the parcel search page: the user types a query, we call ParcelApi.search(query) which returns Observable<Parcel[]> (Parcel has parcelId: string, label: string, area: number). Debounce the input, cancel an in-flight search when a newer query arrives, keep the results as a normalized collection keyed by parcelId, track the selected parcel, loading and error. The state only lives while the /parcels route is active. Add a Vitest spec that proves a slow first response cannot overwrite the results of a newer query.",
+      "expected_output": "A SignalStore with typed state, withEntities keyed by parcelId, an rxMethod with debounceTime and switchMap, the object form of tapResponse, route-level providers instead of providedIn root, ParcelApi as an injected service, and a spec driving two controllable responses.",
+      "files": [],
+      "expectations": [
+        "[tsc] Every produced .ts file type-checks with strict tsc against the latest stable NgRx (evals/check-types.mjs passes)",
+        "The store is built with signalStore from @ngrx/signals, not with @ngrx/store",
+        "Results are stored with withEntities and parcelId is the identifier (selectId, idKey or entityConfig), not an id field added by copying",
+        "The search is an rxMethod whose pipeline uses debounceTime and switchMap",
+        "Every tapResponse call uses the object form tapResponse({ next, error }) (or mapResponse), never the positional two-callback form",
+        "The store is not providedIn root; it is registered in the /parcels route providers (or the routed component's providers)",
+        "ParcelApi is a separate injected service; the store does not use HttpClient directly",
+        "The spec controls two responses (Subjects or similar), resolves the first after the second, and asserts the newer results remain",
+        "The spec runs the store through TestBed so rxMethod and inject have an injection context"
+      ]
+    },
+    {
+      "id": 2,
+      "name": "events-plugin-coordination",
+      "prompt": "Angular 22 app with the latest NgRx SignalStore. We have a LayersStore (map layers with visibility) and a LegendStore (legend entries fetched per visible layer via LegendApi.forLayer(layerId): Observable<LegendEntry[]>). When the user toggles a layer, the legend must reload for that layer, but the two stores must not know about each other. Use the SignalStore Events plugin for this. Show the stores, the events, and the toggle button component that dispatches.",
+      "expected_output": "Event groups created with eventGroup and type, state transitions with withReducer and on, side effects with withEventHandlers returning events through mapResponse or the object form of tapResponse, a component dispatching with injectDispatch, and no import between the two stores.",
+      "files": [],
+      "expectations": [
+        "[tsc] Every produced .ts file type-checks with strict tsc against the latest stable NgRx (evals/check-types.mjs passes)",
+        "Events are declared with eventGroup (or event) and type<...>() and imported from @ngrx/signals/events and @ngrx/signals",
+        "State transitions use withReducer with on(...) handlers",
+        "Side effects use withEventHandlers; withEffects does not appear",
+        "The legend request handles errors inside the inner observable with mapResponse or tapResponse({ next, error })",
+        "The component dispatches through injectDispatch (or the Dispatcher service), not by calling store methods of the other store",
+        "LegendStore does not import or inject LayersStore and LayersStore does not import or inject LegendStore"
+      ]
+    },
+    {
+      "id": 3,
+      "name": "classic-store-print-jobs",
+      "prompt": "Standalone Angular 22 app, latest NgRx. Our print module needs classic NgRx Store state (we want DevTools and action history). A print job is submitted via PrintApi.submit(request): Observable<{ jobId: string }>, then its status is polled every 2 seconds with PrintApi.status(jobId): Observable<'queued' | 'running' | 'done' | 'failed'> until it is done or failed. The current map scale must be read from the existing selector selectMapScale when submitting. Register the state only for the /print route. Include a Vitest spec for the effect that submits jobs.",
+      "expected_output": "createActionGroup with event-style names, createFeature, functional effects with inject, concatLatestFrom from @ngrx/operators for the scale, errors caught inside inner observables, provideState and provideEffects in the route, and an effect spec with provideMockActions and provideMockStore.",
+      "files": [],
+      "expectations": [
+        "[tsc] Every produced .ts file type-checks with strict tsc against the latest stable NgRx (evals/check-types.mjs passes)",
+        "Actions are defined with createActionGroup and a specific source",
+        "The reducer and selectors come from createFeature (extra selectors via extraSelectors or createSelector over the feature)",
+        "Effects are functional (createEffect(..., { functional: true }) with inject) or class-based with inject(); no constructor-injected Actions",
+        "The map scale is combined with concatLatestFrom imported from @ngrx/operators",
+        "Every API call's errors are caught inside the inner (flattened) observable so the effect keeps running",
+        "Polling stops when the status is done or failed (takeWhile, takeUntil, filter plus take, or equivalent)",
+        "State and effects are registered with provideState and provideEffects in the /print route; StoreModule and EffectsModule are not used",
+        "The spec uses provideMockActions and provideMockStore (or overrideSelector) and asserts the emitted action"
+      ]
+    },
+    {
+      "id": 4,
+      "name": "upgrade-legacy-layers-store",
+      "prompt": "Upgrade evals/files/layers-legacy/layers.store.ts to the latest stable NgRx. It was written for NgRx 20. Keep its behavior and public API unchanged and tell me which breaking changes you applied.",
+      "expected_output": "The upgraded file compiles against the latest NgRx: withEffects becomes withEventHandlers, both tapResponse calls use the object form (or mapResponse in the handler), concatLatestFrom comes from @ngrx/operators, and the notes name the breaking changes with the versions that introduced them.",
+      "files": ["evals/files/layers-legacy/layers.store.ts"],
+      "expectations": [
+        "[tsc] Every produced .ts file type-checks with strict tsc against the latest stable NgRx (evals/check-types.mjs passes)",
+        "withEffects is replaced by withEventHandlers",
+        "Both tapResponse calls use the object form tapResponse({ next, error }), or the event handler uses mapResponse",
+        "concatLatestFrom is imported from @ngrx/operators",
+        "The events, state fields, computed visibleCount, persistVisibility method and print actions/selectors keep their names and behavior",
+        "The notes attribute the withEventHandlers rename to NgRx 21 and the tapResponse signature removal to NgRx 22"
+      ]
+    },
+    {
+      "id": 5,
+      "name": "component-local-measure-state",
+      "prompt": "In our Angular 22 geoportal the measurement toolbar component needs state: the active tool ('distance' | 'area' | null), the unit ('m' | 'km') and a 'show segment lengths' toggle, plus a label like 'Distance (km)' derived from them. Only this component uses it and it resets when the toolbar is destroyed. A colleague suggested putting it in the NgRx Store since we are adding NgRx anyway. Implement the state for the component.",
+      "expected_output": "Plain Angular signals, signalState, or a SignalStore provided in the component's providers, with a computed label, and an explanation why the global Store does not fit component-local state.",
+      "files": [],
+      "expectations": [
+        "[tsc] Every produced .ts file type-checks with strict tsc against the latest stable NgRx (evals/check-types.mjs passes)",
+        "The global @ngrx/store is not used for this state",
+        "The state uses Angular signals, signalState, or a SignalStore listed in the component's providers (not providedIn root)",
+        "The label is derived with computed (or withComputed), not stored separately",
+        "The answer explains why component-local state does not belong in the global Store"
+      ]
+    }
+  ]
+}
