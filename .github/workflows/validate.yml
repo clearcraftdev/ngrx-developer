@@ -11,11 +11,15 @@ jobs:
   validate:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
         with:
-          node-version: 22
-      - name: Validate the documentation updater syntax
-        run: node --check scripts/update-ngrx-docs.mjs
+          node-version: 24
+      - name: Validate the script syntax
+        run: |
+          node --check scripts/update-ngrx-docs.mjs
+          node --check scripts/check-skill.mjs
+      - name: Check the skill metadata, snapshot and references
+        run: node scripts/check-skill.mjs
       - name: Verify skills CLI discovery
-        run: npx --yes skills@1.5.9 add . --list
+        run: npx --yes skills@1.7.0 add . --list

@@ -3,6 +3,7 @@
 import { execFile } from 'node:child_process';
 import { createWriteStream } from 'node:fs';
 import {
+  appendFile,
   cp,
   mkdtemp,
   readFile,
@@ -87,6 +88,26 @@ function compareVersions(left, right) {
   }
 
   return 0;
+}
+
+function releaseType(previous, next) {
+  const [previousMajor, previousMinor] = previous.split('.').map(Number);
+  const [nextMajor, nextMinor] = next.split('.').map(Number);
+
+  if (nextMajor !== previousMajor) {
+    return 'major';
+  }
+
+  return nextMinor !== previousMinor ? 'minor' : 'patch';
+}
+
+async function writeWorkflowOutputs(outputs) {
+  if (!process.env.GITHUB_OUTPUT) {
+    return;
+  }
+
+  const lines = Object.entries(outputs).map(([key, value]) => `${key}=${value}`);
+  await appendFile(process.env.GITHUB_OUTPUT, `${lines.join('\n')}\n`);
 }
 
 async function fetchPackageMetadata(packageName, version) {
@@ -270,6 +291,7 @@ async function main() {
     console.log(
       `NgRx documentation is current at ${currentSource.version} (${currentSource.commit}).`
     );
+    await writeWorkflowOutputs({ changed: 'false', version: currentSource.version });
     return;
   }
 
@@ -311,6 +333,12 @@ async function main() {
     console.log(
       `Updated NgRx documentation to ${nextSource.version} (${nextSource.commit}); copied ${markdownFiles} guide files.`
     );
+    await writeWorkflowOutputs({
+      changed: 'true',
+      previous: currentSource.version,
+      version: nextSource.version,
+      release: releaseType(currentSource.version, nextSource.version),
+    });
   } finally {
     await rm(temporaryDirectory, { force: true, recursive: true });
   }
