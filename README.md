@@ -1,6 +1,6 @@
 # NgRx Developer Agent Skill
 
-[![skills.sh](https://img.shields.io/badge/skills.sh-ngrx--developer-111827?style=flat)](https://www.skills.sh/kamilfurtak/ngrx-developer/ngrx-developer)
+[![skills.sh](https://img.shields.io/badge/skills.sh-ngrx--developer-111827?style=flat)](https://www.skills.sh/clearcraftdev/ngrx-developer/ngrx-developer)
 
 An agent skill for designing, implementing, reviewing, testing, debugging, and migrating Angular state management with NgRx.
 
@@ -9,13 +9,13 @@ It combines concise, agent-oriented guidance with a pinned snapshot of the offic
 ## Install
 
 ```bash
-npx skills add kamilfurtak/ngrx-developer --skill ngrx-developer -g
+npx skills add clearcraftdev/ngrx-developer --skill ngrx-developer -g
 ```
 
 To install for a specific supported agent, add its identifier, for example:
 
 ```bash
-npx skills add kamilfurtak/ngrx-developer --skill ngrx-developer -g -a codex
+npx skills add clearcraftdev/ngrx-developer --skill ngrx-developer -g -a codex
 ```
 
 ## Update
